@@ -89,7 +89,8 @@ def intersection(line1, line2):
     b = np.array([[rho1], [rho2]])
     x0, y0 = np.linalg.solve(A, b)
     x0, y0 = int(np.round(x0)), int(np.round(y0))
-    return [(x0, y0)]
+    tup = (x0, y0)
+    return tup
 
 
 def segmented_intersections(lines):
@@ -105,27 +106,36 @@ def segmented_intersections(lines):
     return intersections
 
 
-def findLineIntersections(pil_img: Image) -> List[List[Tuple[int, int]]]:
+def findLineIntersections(pil_img: Image, eps: float = 10.0) -> List[Tuple[int, int]]:
+    ret = set()
     lines = imageToHoughLines(pil_img)
 
     segmented = segment_by_angle_kmeans(lines)
     intersecions = segmented_intersections(segmented)
-    # for intersecs in intersecions:
-    #     for intersec in intersecs:
-    #         for
-    return intersecions
+    # Ezen kéne még heggeszteni, hogy ne O(n^2) legyen
+    for i in range(len(intersecions)):
+        for j in range(i + 1, len(intersecions)):
+            dist = np.linalg.norm(np.array(intersecions[i]) - np.array(intersecions[j]))
+            if dist < eps:
+                break
+        else:
+            ret.add(intersecions[i])
 
-def findQuadrants(intersections: List[List[Tuple[int, int]]])->List[Tuple[Tuple[int, int],Tuple[int, int],Tuple[int, int],Tuple[int, int]]]:
+    return list(ret)
+
+
+def findQuadrants(intersections: List[List[Tuple[int, int]]]) -> List[
+    Tuple[Tuple[int, int], Tuple[int, int], Tuple[int, int], Tuple[int, int]]]:
     pass
+
 
 if __name__ == "__main__":
     print(imageToStr(Image.open('testimg/1.png')))
     print(imageToLines(Image.open('testimg/2.png')))
     print(findLineIntersections(Image.open('testimg/2.png')))
     img = cv2.imread('testimg/2.png')
-    for intersecs in findLineIntersections(Image.open('testimg/2.png')):
-        for intersec in intersecs:
-            cv2.circle(img,intersec,1,(255,0,0),1)
+    for point in findLineIntersections(Image.open('testimg/2.png')):
+        cv2.circle(img, point, 1, (255, 0, 0), 1)
 
-    cv2.imshow('img',img)
+    cv2.imshow('img', img)
     cv2.waitKey(0)
