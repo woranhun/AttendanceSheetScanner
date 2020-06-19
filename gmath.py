@@ -8,7 +8,7 @@ from collections import defaultdict
 
 from compVision import ComputerVision
 
-Point = Tuple[int, int]
+Point = np.ndarray
 Quad = Tuple[Point, Point, Point, Point]
 Line = Tuple[Point, Point]
 
@@ -17,10 +17,10 @@ class GraphicsMath:
     @staticmethod
     def lerp_point(p1: Point, p2: Point, amount: float) -> Point:
         """Linearly interpolates two points given a factor"""
-        return (
+        return np.ndarray([
             round((p2[0] - p1[0]) * amount + p1[0]),
             round((p2[1] - p1[1]) * amount + p1[1])
-        )
+        ])
 
     @staticmethod
     def transform_to_rectangle(img: Image, points: Quad) -> Image:
@@ -72,7 +72,27 @@ class GraphicsMath:
         return output_img
 
     @staticmethod
-    def intersection(line1: Line, line2: Line):
+    def perpendicular(a):
+        b = np.empty_like(a)
+        b[0] = -a[1]
+        b[1] = a[0]
+        return b
+
+    @staticmethod
+    def line_segment_intersection(line1: Line, line2: Line):
+        """Returns the intersection of two line segments
+
+        https://stackoverflow.com/questions/3252194/numpy-and-line-intersections"""
+        da = line1[1] - line1[0]
+        db = line2[1] - line2[0]
+        dp = line1[0] - line2[0]
+        da_perpendicular = GraphicsMath.perpendicular(da)
+        denom = np.dot(da_perpendicular, db)
+        num = np.dot(da_perpendicular, dp)
+        return (num / denom.astype(float)) * db + line2[0]
+
+    @staticmethod
+    def intersection(line1: Line, line2: Line) -> Point:
         """Finds the intersection of two lines given in Hesse normal form.
 
         Returns closest integer pixel locations.
@@ -87,11 +107,10 @@ class GraphicsMath:
         b = np.array([[rho1], [rho2]])
         x0, y0 = np.linalg.solve(arr, b)
         x0, y0 = int(np.round(x0)), int(np.round(y0))
-        tup = (x0, y0)
-        return tup
+        return np.array([x0, y0])
 
     @staticmethod
-    def segmented_intersections(lines):
+    def segmented_intersections(lines) -> List[Point]:
         """Finds the intersections between groups of lines."""
 
         intersections = []
@@ -135,13 +154,49 @@ class GraphicsMath:
         return segmented
 
     @staticmethod
-    def findLineIntersections(pil_img: Image, eps: float = 10.0) -> List[Point]:
+    def imageToQuads(pil_img: Image) -> List[Quad]:
+        lines = ComputerVision.imageToHoughLinesP(pil_img)
+
+        vertical = []
+        horizontal = []
+
+        for line in lines:
+            direction = np.array([line[1][0] - line[0][0], line[1][1] - line[0][1]])
+            length = math.hypot(direction[0], direction[1])
+            direction[0] /= length
+            direction[1] /= length
+            horizontal_amount = abs(np.dot(direction, np.array([1, 0])))
+            vertical_amount = abs(np.dot(direction, np.array([0, 1])))
+
+            if horizontal_amount > vertical_amount:
+                horizontal += [line]
+            else:
+                vertical += [line]
+
+        horizontal.sort(key=lambda l: l[0][1])
+        vertical.sort(key=lambda l: l[0][0])
+
+        quads = []
+
+        for x in range(len(vertical) - 1):
+            for y in range(len(horizontal) - 1):
+                vertical1 = vertical[x]
+                vertical2 = vertical[x + 1]
+                horizontal1 = horizontal[y]
+                horizontal2 = horizontal[y + 1]
+                p1 = GraphicsMath.line_segment_intersection(vertical1, horizontal1)
+                p2 = GraphicsMath.line_segment_intersection(vertical1, horizontal2)
+                p3 = GraphicsMath.line_segment_intersection(vertical2, horizontal2)
+                p4 = GraphicsMath.line_segment_intersection(vertical2, horizontal1)
+                quads += [(p1, p2, p3, p4)]
+        return quads
+
+    @staticmethod
+    def findLineIntersections(pil_img: Image, eps: float = 10) -> List[Point]:
         ret = set()
         lines = ComputerVision.imageToHoughLines(pil_img)
-
         segmented = GraphicsMath.segment_by_angle_kmeans(lines)
         intersections = GraphicsMath.segmented_intersections(segmented)
-
         # Ezen kéne még heggeszteni, hogy ne O(n^2) legyen
         for i in range(len(intersections)):
             for j in range(i + 1, len(intersections)):
