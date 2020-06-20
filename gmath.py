@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from scipy.spatial import distance
+from numpyext import normalize
 
 from compvis import ComputerVision
 
@@ -104,7 +105,7 @@ class GraphicsMath:
         return segmented
 
     @staticmethod
-    def intersection(line1, line2):
+    def intersection(line1, line2) -> Point:
         """Finds the intersection of two lines given in Hesse normal form.
 
         Returns closest integer pixel locations.
@@ -119,11 +120,10 @@ class GraphicsMath:
         b = np.array([[rho1], [rho2]])
         x0, y0 = np.linalg.solve(arr, b)
         x0, y0 = int(np.round(x0)), int(np.round(y0))
-        tup = (x0, y0)
-        return tup
+        return np.array([x0, y0])
 
     @staticmethod
-    def segmented_intersections(lines):
+    def segmented_intersections(lines) -> List[Point]:
         """Finds the intersections between groups of lines."""
 
         intersections = []
@@ -136,8 +136,8 @@ class GraphicsMath:
         return intersections
 
     @staticmethod
-    def findLineIntersections(pil_img: Image, eps: float = 10.0) -> List[Tuple[int, int]]:
-        ret = set()
+    def findLineIntersections(pil_img: Image, eps: float = 10.0) -> List[Point]:
+        ret = []
         lines = ComputerVision.imageToHoughLines(pil_img)
 
         segmented = GraphicsMath.segment_by_angle_kmeans(lines)
@@ -149,6 +149,42 @@ class GraphicsMath:
                 if dist < eps:
                     break
             else:
-                ret.add(intersecions[i])
+                ret.append(intersecions[i])
 
-        return list(ret)
+        return ret
+
+    @staticmethod
+    def create_grid_from_points(points: List[Point], eps: float = 5) -> List[Quad]:
+        points.sort(key=lambda p: p[1])
+        points.sort(key=lambda p: p[0])
+
+        top_left = points.pop(0)
+
+        line = [top_left]
+        for i in range(len(points) - 1, 0, -1):
+            p = points[i]
+            if np.abs(top_left[1] - p[1]) < eps:
+                line.append(points.pop(i))
+
+        line.sort(key=lambda p: p[0])
+
+        grid = []
+        for top_point in line:
+            vertical_line = [top_point]
+
+            for p in points:
+                if np.abs(top_point[0] - p[0]) < eps:
+                    vertical_line.append(p)
+
+            grid.append(vertical_line)
+
+        quads = []
+        for x in range(len(grid) - 1):
+            for y in range(len(grid[x]) - 1):
+                p1 = grid[x][y]
+                p2 = grid[x][y + 1]
+                p3 = grid[x + 1][y + 1]
+                p4 = grid[x + 1][y]
+                quads.append((p1, p2, p3, p4))
+
+        return quads
