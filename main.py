@@ -1,11 +1,11 @@
 from typing import Tuple
-
 import cv2
 from PIL import Image
+import numpy as np
 
 from gmath import GraphicsMath
 
-Point = Tuple[int, int]
+Point = np.ndarray
 Quad = Tuple[Point, Point, Point, Point]
 Line = Tuple[Point, Point]
 

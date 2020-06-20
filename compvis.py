@@ -5,7 +5,7 @@ import numpy as np
 import pytesseract
 from PIL import Image
 
-Point = Tuple[int, int]
+Point = np.ndarray
 Quad = Tuple[Point, Point, Point, Point]
 Line = Tuple[Point, Point]
 
@@ -39,6 +39,6 @@ class ComputerVision:
                 y1 = int(y0 + 1000 * a)
                 x2 = int(x0 - 1000 * (-b))
                 y2 = int(y0 - 1000 * a)
-                out.append(((x1, y1), (x2, y2)))
+                out.append((np.array([x1, y1]), np.array([x2, y2])))
 
         return out
