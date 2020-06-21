@@ -68,19 +68,20 @@ class mainGUI(ASSGUI):
 
     def GetNameFromArea(self, _):
         root = tk.Toplevel()
-        self.selector_gui = getNameGUI(root, self.img)
+        self.selector_gui = getNameGUI(root, self.background_image)
         root.mainloop()
 
     def set_scan_area(self, scan_area: Quad) -> None:
-        self.background_image = np.array(GraphicsMath.transform_to_rectangle(self.img, scan_area))
+        self.background_image = np.array(GraphicsMath.transform_to_rectangle(Image.fromarray(self.img), scan_area))
         self.update_canvas()
 
 
 class setAreaGUI(ASSGUI):
 
     def __init__(self, master, img, callback: Callable[[Quad], None]):
-        super(setAreaGUI, self).__init__(master, img)
+        self.texts = ["bal felső", "bal alsó", "jobb alsó", "jobb felső"]
         self.corners = []
+        super(setAreaGUI, self).__init__(master, img)
         self.callback = callback
         self.buttons = None
 
@@ -96,6 +97,14 @@ class setAreaGUI(ASSGUI):
 
     def export_scan_area(self) -> None:
         self.callback((self.corners[0], self.corners[1], self.corners[2], self.corners[3]))
+
+    def update_canvas(self):
+        super(setAreaGUI, self).update_canvas()
+        if len(self.corners) < 4:
+            self.canvas.create_text(5, 5,
+                                    font="sans-serif 20 bold",
+                                    text=f"Kattintson az átalakítandó terület {self.texts[len(self.corners)]} sarkára",
+                                    anchor=tk.NW)
 
 
 class getNameGUI(ASSGUI):

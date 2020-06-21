@@ -25,8 +25,6 @@ class GraphicsMath:
     def transform_to_rectangle(img, points: Quad) -> Image:
         """Transforms a quad into a rectangle"""
 
-        image = Image.fromarray(img)
-
         # Top points
         sorted_points = sorted(points, key=lambda point: point[1])
         if sorted_points[0][0] < sorted_points[1][0]:
@@ -52,7 +50,7 @@ class GraphicsMath:
         long_side_len = math.floor(max(left_len, right_len))
         long_top_len = math.floor(max(top_len, bottom_len))
 
-        input_img = image.convert("RGB")
+        input_img = img.convert("RGB")
         output_img = Image.new("RGB", (long_top_len, long_side_len))
 
         for x in range(long_top_len):
