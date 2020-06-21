@@ -42,7 +42,7 @@ class ComputerVision:
                 out.append((np.array([x1, y1]), np.array([x2, y2])))
 
         return out
+
     @staticmethod
-    def getNameFromArea(Points, img):
-        print(Points)
-        print(ComputerVision.imageToStr(img[Points[0][1]:Points[1][1],Points[0][0]:Points[1][0]]))
+    def getNameFromArea(points: List[Point], img: Image) -> str:
+        return ComputerVision.imageToStr(img[points[0][1]:points[1][1], points[0][0]:points[1][0]])
