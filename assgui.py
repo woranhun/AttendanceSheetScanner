@@ -22,7 +22,11 @@ class ASSGUI(object):
         self.background_image = None if img is None else np.array(img)[:, :, ::-1].copy()
         self.photo = None
 
-        height, width, no_channels = img.shape
+        if img is not None:
+            height, width, no_channels = img.shape
+        else:
+            width=300
+            height=300
 
         self.buttons = list()
         if size is not None:
