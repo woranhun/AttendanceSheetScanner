@@ -5,9 +5,9 @@ import cv2
 import numpy as np
 from PIL import Image
 from scipy.spatial import distance
-from numpyext import normalize
 
 from compvis import ComputerVision
+from numpyext import nparray_to_point
 
 Point = np.ndarray
 Quad = Tuple[Point, Point, Point, Point]
@@ -19,14 +19,13 @@ class GraphicsMath:
     @staticmethod
     def lerp_point(p1: Point, p2: Point, amount: float) -> Point:
         """Linearly interpolates two points given a factor"""
-        return np.ndarray([
-            round((p2[0] - p1[0]) * amount + p1[0]),
-            round((p2[1] - p1[1]) * amount + p1[1])
-        ])
+        return (p2 - p1) * amount + p1
 
     @staticmethod
-    def transform_to_rectangle(img: Image, points: Quad) -> Image:
+    def transform_to_rectangle(img, points: Quad) -> Image:
         """Transforms a quad into a rectangle"""
+
+        image = Image.fromarray(img)
 
         # Top points
         sorted_points = sorted(points, key=lambda point: point[1])
@@ -53,7 +52,7 @@ class GraphicsMath:
         long_side_len = math.floor(max(left_len, right_len))
         long_top_len = math.floor(max(top_len, bottom_len))
 
-        input_img = img.convert("RGB")
+        input_img = image.convert("RGB")
         output_img = Image.new("RGB", (long_top_len, long_side_len))
 
         for x in range(long_top_len):
@@ -68,7 +67,7 @@ class GraphicsMath:
                 input_point = GraphicsMath.lerp_point(top_point, bottom_point, y_lerp_factor)
                 output_point = (x, y)
 
-                col = input_img.getpixel(input_point)
+                col = input_img.getpixel(nparray_to_point(input_point))
                 output_img.putpixel(output_point, col)
 
         return output_img
