@@ -70,7 +70,8 @@ class mainGUI(ASSGUI):
 
         self.createButton("SetScanArea", 0, 0, self.ScanAreaClick)
         self.createButton("GetNameFromArea", 1, 0, self.GetNameFromArea)
-        self.createButton("ConvertPDF", 2, 0, self.ConvertPDF)
+        self.createButton("GetSignFromArea", 2, 0, self.GetSignFromArea)
+        self.createButton("ConvertPDF", 3, 0, self.ConvertPDF)
         PDFToIMG.createDirs()
 
     def ScanAreaClick(self, _):
@@ -81,6 +82,10 @@ class mainGUI(ASSGUI):
     def GetNameFromArea(self, _):
         root = tk.Toplevel()
         self.selector_gui = getNameGUI(root, self.img)
+        root.mainloop()
+    def GetSignFromArea(self, _):
+        root = tk.Toplevel()
+        self.selector_gui = getSignGUI(root, self.img)
         root.mainloop()
 
     def ConvertPDF(self, event):
@@ -141,6 +146,24 @@ class getNameGUI(ASSGUI):
         if len(self.points) >= 2:
             print(ComputerVision.getNameFromArea(self.points, self.background_image))
             self.master.destroy()
+
+class getSignGUI(ASSGUI):
+
+    def __init__(self, master, img):
+        super().__init__(master, img)
+        self.points = list()
+        self.buttons = None
+
+    def mouseClickOnCanvas(self, event):
+        self.points.append(np.array([event.x, event.y]))
+        print("mouse clicked at x={0} y={1}".format(event.x, event.y))
+        cv2.circle(self.background_image, (event.x, event.y), 6, (255, 0, 0), 1)
+        self.update_canvas()
+
+        if len(self.points) >= 2:
+            ComputerVision.getSignitureFromArea(self.points,self.background_image)
+            self.master.destroy()
+
 
 
 class convertPDF(ASSGUI):

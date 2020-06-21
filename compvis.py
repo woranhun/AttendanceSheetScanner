@@ -46,3 +46,19 @@ class ComputerVision:
     def getNameFromArea(Points, img):
         print(Points)
         print(ComputerVision.imageToStr(img[Points[0][1]:Points[1][1],Points[0][0]:Points[1][0]]))
+    @staticmethod
+    def getSignitureFromArea(Points, img,treshold=230):
+        ROI= img[Points[0][1]:Points[1][1],Points[0][0]:Points[1][0]]
+        whitepxcnt=0
+        allpxcnt=0
+        for y in range(2,ROI.shape[0]):
+            for x in range(2, ROI.shape[1]):
+                allpxcnt+=1
+                if ROI[y][x][0]>=treshold or ROI[y][x][1]>=treshold or ROI[y][x][2]>=treshold:
+                    whitepxcnt+=1
+        print(whitepxcnt,allpxcnt, whitepxcnt/allpxcnt)
+        if whitepxcnt/allpxcnt < 1.0:
+            return True
+        else:
+            return False
+
