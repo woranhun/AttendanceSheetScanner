@@ -3,19 +3,19 @@ import tkinter as tk
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
-from typing import Callable, List
+from typing import Callable, List, Tuple
 
 from compvis import ComputerVision
 from gmath import GraphicsMath
 from numpyext import nparray_to_point
 
 Point = np.ndarray
+Quad = Tuple[Point, Point, Point, Point]
 
 
 class ASSGUI(object):
 
     def __init__(self, master, img):
-        self.img = img
         self.master = master
         self.photo = None
 
@@ -54,9 +54,10 @@ class ASSGUI(object):
 class mainGUI(ASSGUI):
 
     def __init__(self, master, img):
-        self.scan_area = None
-        self.selector_gui = None
         super(mainGUI, self).__init__(master, img)
+        self.selector_gui = None
+        self.img = img
+
         self.createButton("SetScanArea", 0, 0, self.ScanAreaClick)
         self.createButton("GetNameFromArea", 1, 0, self.GetNameFromArea)
 
@@ -70,23 +71,14 @@ class mainGUI(ASSGUI):
         self.selector_gui = getNameGUI(root, self.img)
         root.mainloop()
 
-    def update_canvas(self):
-        super(mainGUI, self).update_canvas()
-        if self.scan_area is not None:
-            print(1)
-            for i in range(len(self.scan_area)):
-                p1 = nparray_to_point(self.scan_area[i])
-                p2 = nparray_to_point(self.scan_area[(i + 1) % len(self.scan_area)])
-                self.canvas.create_line(p1[0], p1[1], p2[0], p2[1], fill="red", dash=(5, 5), width=3)
-
-    def set_scan_area(self, scan_area: List[Point]) -> None:
-        self.scan_area = scan_area
+    def set_scan_area(self, scan_area: Quad) -> None:
+        self.background_image = np.array(GraphicsMath.transform_to_rectangle(self.img, scan_area))
         self.update_canvas()
 
 
 class setAreaGUI(ASSGUI):
 
-    def __init__(self, master, img, callback: Callable[[List[Point]], None]):
+    def __init__(self, master, img, callback: Callable[[Quad], None]):
         super(setAreaGUI, self).__init__(master, img)
         self.corners = []
         self.callback = callback
@@ -103,7 +95,7 @@ class setAreaGUI(ASSGUI):
             self.master.destroy()
 
     def export_scan_area(self) -> None:
-        self.callback(self.corners)
+        self.callback((self.corners[0], self.corners[1], self.corners[2], self.corners[3]))
 
 
 class getNameGUI(ASSGUI):
@@ -121,5 +113,5 @@ class getNameGUI(ASSGUI):
         self.update_canvas()
 
         if len(self.points) >= 2:
-            print(ComputerVision.getNameFromArea(self.points, self.img))
+            print(ComputerVision.getNameFromArea(self.points, self.background_image))
             self.master.destroy()
