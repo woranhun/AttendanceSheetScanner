@@ -11,7 +11,7 @@ Quad = Tuple[Point, Point, Point, Point]
 Line = Tuple[Point, Point]
 
 if __name__ == "__main__":
-    img = cv2.imread('testimg/7.png')
+    img = cv2.imread('testimg/8.png')
     root = tk.Tk()
     gui = mainGUI(root, img)
 
