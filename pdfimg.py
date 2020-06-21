@@ -19,8 +19,8 @@ class PDFToIMG:
 
     @staticmethod
     def convertPDFToIMG(file):
-        dst = os.path.join(PDFToIMG.parent, "src", "img",str(datetime.now().date()) +"_"+ str(datetime.now().hour))
+        dst = os.path.join(PDFToIMG.parent, "src", "img", str(datetime.now().date()) + "_" + str(datetime.now().hour))
         if not os.path.exists(dst):
             os.mkdir(dst)
-        pdf2image.convert_from_path(pdf_path=file, output_folder=dst,fmt="png")
+        pdf2image.convert_from_path(pdf_path=file, output_folder=dst, fmt="png")
         print(dst)

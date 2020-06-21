@@ -4,7 +4,7 @@ from tkinter import filedialog
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
-from typing import Callable, List, Tuple
+from typing import Callable, Tuple
 
 from compvis import ComputerVision
 from gmath import GraphicsMath
@@ -25,24 +25,17 @@ class ASSGUI(object):
         if img is not None:
             height, width, no_channels = img.shape
         else:
-            width=300
-            height=300
+            width = 300
+            height = 300
 
         self.buttons = list()
         if size is not None:
             self.master.geometry(size)
 
         self.canvas = tk.Canvas(self.master, width=width, height=height)
-        self.canvas.bind("<Button-1>", self.mouseClickOnCanvas)
 
         self.label = None
 
-        self.update_canvas()
-
-    def mouseClickOnCanvas(self, event):
-        print("mouse clicked at x={0} y={1}".format(event.x, event.y))
-        for point in GraphicsMath.findLineIntersections(self.background_image):
-            cv2.circle(self.background_image, nparray_to_point(point), 1, (255, 0, 0), 1)
         self.update_canvas()
 
     def createButton(self, text, col, row, callback):
@@ -83,13 +76,25 @@ class mainGUI(ASSGUI):
         self.selector_gui = getNameGUI(root, self.img)
         root.mainloop()
 
-    def ConvertPDF(self, event):
+    def ConvertPDF(self, _):
         root = tk.Toplevel()
-        self.newwindow = convertPDF(root, None)
+        self.selector_gui = convertPDF(root, None)
         root.mainloop()
 
     def set_scan_area(self, scan_area: Quad) -> None:
-        self.background_image = np.array(GraphicsMath.transform_to_rectangle(Image.fromarray(self.img), scan_area))
+        pil_img = GraphicsMath.transform_to_rectangle(Image.fromarray(self.img), scan_area)
+        img = np.array(pil_img)[:, :, ::-1].copy()
+        width, height = pil_img.size
+        cv2.rectangle(img, (0, 0), (int(width), int(height)), (0, 0, 0), 3)
+
+        points = GraphicsMath.findLineIntersections(img)
+        quads = GraphicsMath.create_grid_from_points(points, 5)
+
+        for quad in quads:
+            points = [nparray_to_point(p) for p in quad]
+            cv2.rectangle(img, points[0], points[2], (255, 0, 0), 2)
+
+        self.background_image = img
         self.update_canvas()
 
 
@@ -101,11 +106,12 @@ class setAreaGUI(ASSGUI):
         super(setAreaGUI, self).__init__(master, img)
         self.callback = callback
         self.buttons = None
+        self.canvas.bind("<Button-1>", self.mouseClickOnCanvas)
 
     def mouseClickOnCanvas(self, event) -> None:
-        print("mouse clicked at x={0} y={1}".format(event.x, event.y))
         self.corners.append(np.array([event.x, event.y]))
-        cv2.circle(self.background_image, (event.x, event.y), 6, (255, 0, 0), 1)
+        cv2.line(self.background_image, (event.x - 5, event.y - 5), (event.x + 5, event.y + 5), (255, 0, 0), 2)
+        cv2.line(self.background_image, (event.x - 5, event.y + 5), (event.x + 5, event.y - 5), (255, 0, 0), 2)
         self.update_canvas()
 
         if len(self.corners) >= 4:
@@ -130,11 +136,11 @@ class getNameGUI(ASSGUI):
         super().__init__(master, img)
         self.points = list()
         self.buttons = None
+        self.canvas.bind("<Button-1>", self.mouseClickOnCanvas)
 
     def mouseClickOnCanvas(self, event):
         self.points.append(np.array([event.x, event.y]))
 
-        print("mouse clicked at x={0} y={1}".format(event.x, event.y))
         cv2.circle(self.background_image, (event.x, event.y), 6, (255, 0, 0), 1)
         self.update_canvas()
 
@@ -146,7 +152,7 @@ class getNameGUI(ASSGUI):
 class convertPDF(ASSGUI):
 
     def __init__(self, master, img):
-        super().__init__(master,img,"300x300")
+        super().__init__(master, img, "300x300")
         self.createButton("OpenPDF", 0, 0, self.OpenPDF)
 
     def OpenPDF(self, _):
