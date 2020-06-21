@@ -5,7 +5,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from scipy.spatial import distance
-from numpyext import normalize
+from numpyext import normalize, nparray_to_point
 
 from compvis import ComputerVision
 
@@ -19,10 +19,7 @@ class GraphicsMath:
     @staticmethod
     def lerp_point(p1: Point, p2: Point, amount: float) -> Point:
         """Linearly interpolates two points given a factor"""
-        return np.ndarray([
-            round((p2[0] - p1[0]) * amount + p1[0]),
-            round((p2[1] - p1[1]) * amount + p1[1])
-        ])
+        return (p2 - p1) * amount + p1
 
     @staticmethod
     def transform_to_rectangle(img: Image, points: Quad) -> Image:
@@ -68,7 +65,7 @@ class GraphicsMath:
                 input_point = GraphicsMath.lerp_point(top_point, bottom_point, y_lerp_factor)
                 output_point = (x, y)
 
-                col = input_img.getpixel(input_point)
+                col = input_img.getpixel(nparray_to_point(input_point))
                 output_img.putpixel(output_point, col)
 
         return output_img
