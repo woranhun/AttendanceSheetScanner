@@ -151,7 +151,7 @@ class GraphicsMath:
         return ret
 
     @staticmethod
-    def create_grid_from_points(points: List[Point], eps: float = 5) -> List[Quad]:
+    def create_grid_from_points(points: List[Point], eps: float = 5) -> List[List[Quad]]:
         points.sort(key=lambda p: p[1])
         points.sort(key=lambda p: p[0])
 
@@ -177,11 +177,13 @@ class GraphicsMath:
 
         quads = []
         for x in range(len(grid) - 1):
+            column = []
             for y in range(len(grid[x]) - 1):
                 p1 = grid[x][y]
                 p2 = grid[x][y + 1]
                 p3 = grid[x + 1][y + 1]
                 p4 = grid[x + 1][y]
-                quads.append((p1, p2, p3, p4))
+                column.append((p1, p2, p3, p4))
+            quads.append(column)
 
         return quads

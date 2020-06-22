@@ -1,7 +1,8 @@
 #!/bin/bash
-sudo apt update
-sudo apt install tesseract-ocr
-sudo apt install libtesseract-dev
+sudo apt update -y
+sudo apt install tesseract-ocr -y
+sudo apt install libtesseract-dev -y
+sudo apt install tesseract-ocr-hun -y
 
 python3 -m venv env
 source env/bin/activate

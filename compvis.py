@@ -14,7 +14,7 @@ class ComputerVision:
 
     @staticmethod
     def imageToStr(img: Image) -> str:
-        ou = pytesseract.image_to_string(img)
+        ou = pytesseract.image_to_string(img, lang="hun", config="--psm 7")
         return ou
 
     @staticmethod
@@ -42,23 +42,22 @@ class ComputerVision:
                 out.append((np.array([x1, y1]), np.array([x2, y2])))
 
         return out
-    @staticmethod
-    def getNameFromArea(Points, img):
-        print(Points)
-        print(ComputerVision.imageToStr(img[Points[0][1]:Points[1][1],Points[0][0]:Points[1][0]]))
-    @staticmethod
-    def getSignitureFromArea(Points, img,treshold=230):
-        ROI= img[Points[0][1]:Points[1][1],Points[0][0]:Points[1][0]]
-        whitepxcnt=0
-        allpxcnt=0
-        for y in range(2,ROI.shape[0]):
-            for x in range(2, ROI.shape[1]):
-                allpxcnt+=1
-                if ROI[y][x][0]>=treshold or ROI[y][x][1]>=treshold or ROI[y][x][2]>=treshold:
-                    whitepxcnt+=1
-        print(whitepxcnt,allpxcnt, whitepxcnt/allpxcnt)
-        if whitepxcnt/allpxcnt < 1.0:
-            return True
-        else:
-            return False
 
+    @staticmethod
+    def getNameFromArea(points: Tuple[Tuple[int, int], Tuple[int, int]], img: np.ndarray) -> str:
+        return ComputerVision.imageToStr(img[points[0][1]:points[1][1], points[0][0]:points[1][0]])
+
+    @staticmethod
+    def getSignatureFromArea(points: Tuple[Tuple[int, int], Tuple[int, int]], img: np.ndarray,
+                             white_threshold: int = 230, sign_threshold: float = 1):
+        roi = img[points[0][1]:points[1][1], points[0][0]:points[1][0]]
+        whitepxcnt = 0
+        allpxcnt = 0
+        for y in range(3, roi.shape[0] - 3):
+            for x in range(3, roi.shape[1] - 3):
+                allpxcnt += 1
+                if roi[y][x][0] >= white_threshold and \
+                        roi[y][x][1] >= white_threshold and \
+                        roi[y][x][2] >= white_threshold:
+                    whitepxcnt += 1
+        return whitepxcnt / allpxcnt < sign_threshold
