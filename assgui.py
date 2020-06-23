@@ -1,16 +1,16 @@
 import tkinter as tk
 from tkinter import filedialog
+from typing import Callable, Tuple, List
 
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
-from typing import Callable, Tuple, List
 
 from compvis import ComputerVision
+from data import Student
 from gmath import GraphicsMath
 from numpyext import nparray_to_point
 from pdfimg import PDFToIMG
-from data import Student
 
 Point = np.ndarray
 Quad = Tuple[Point, Point, Point, Point]
@@ -44,11 +44,11 @@ class ASSGUI(object):
         label.grid(row=row, column=col)
         label.bind("<Button-1>", callback)
         self.objects.append(label)
-    def createDropDown(self, lst, col, row, var ):
-        dropdown = tk.OptionMenu(self.master,var,*lst)
-        dropdown.grid(row=row,column=col)
-        self.objects.append(dropdown)
 
+    def createDropDown(self, lst, col, row, var):
+        dropdown = tk.OptionMenu(self.master, var, *lst)
+        dropdown.grid(row=row, column=col)
+        self.objects.append(dropdown)
 
     def update_canvas(self):
         if self.background_image is not None:
@@ -89,7 +89,6 @@ class mainGUI(ASSGUI):
         self.update_canvas()
         super(mainGUI, self).__init__(self.master, self.img)
 
-
     def DetectSignatures(self, _):
         if self.grid is not None:
             root = tk.Toplevel()
@@ -124,7 +123,7 @@ class setAreaGUI(ASSGUI):
         self.corners = []
         super(setAreaGUI, self).__init__(master, img)
         self.callback = callback
-        self.objects= None
+        self.objects = None
         self.canvas.bind("<Button-1>", self.mouseClickOnCanvas)
 
     def mouseClickOnCanvas(self, event) -> None:
@@ -193,11 +192,12 @@ class DetectSignatures(ASSGUI):
             self.included_students.append(student)
 
         self.canvas.bind("<Button-1>", self.mouseClickOnCanvas)
-        self.createButton("Save",0,0, self.save)
+        self.createButton("Save", 0, 0, self.save)
+        self.createButton("Cancel", 0, 0, self.cancel)
         self.selected = tk.StringVar(master)
-        self.dates=["1","2","3","4"]
+        self.dates = ["1", "2", "3", "4"]
         self.selected.set(self.dates[0])
-        self.createDropDown(self.dates,1,0,self.selected)
+        self.createDropDown(self.dates, 1, 0, self.selected)
         self.update_canvas()
 
     def mouseClickOnCanvas(self, event) -> None:
@@ -228,7 +228,12 @@ class DetectSignatures(ASSGUI):
         cv2.addWeighted(draw_img, 0.5, self.background_image, 0.5, 0, self.background_image)
 
         super(DetectSignatures, self).update_canvas()
+
     def save(self, event) -> None:
         print("Mentes")
         self.master.destroy()
         print(self.selected.get())
+
+    def cancel(self, event) -> None:
+        self.master.destroy()
+        return
