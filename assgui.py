@@ -29,7 +29,7 @@ class ASSGUI(object):
             width = 300
             height = 300
 
-        self.buttons = list()
+        self.objects = list()
         if size is not None:
             self.master.geometry(size)
 
@@ -43,7 +43,12 @@ class ASSGUI(object):
         label = tk.Label(self.master, text=text)
         label.grid(row=row, column=col)
         label.bind("<Button-1>", callback)
-        self.buttons.append(label)
+        self.objects.append(label)
+    def createDropDown(self, lst, col, row, var ):
+        dropdown = tk.OptionMenu(self.master,var,*lst)
+        dropdown.grid(row=row,column=col)
+        self.objects.append(dropdown)
+
 
     def update_canvas(self):
         if self.background_image is not None:
@@ -66,8 +71,9 @@ class mainGUI(ASSGUI):
         self.students = []
 
         self.createButton("SetScanArea", 0, 0, self.ScanAreaClick)
-        self.createButton("ConvertPDF", 3, 0, self.ConvertPDF)
-        self.createButton("ConvertToCSV", 6, 0, self.ConvertToCSV)
+        self.createButton("OpenPDF", 3, 0, self.OpenPDF)
+        self.createButton("SelectImage", 4, 0, self.SelectImage)
+        self.createButton("DetectSignatures", 6, 0, self.DetectSignatures)
         PDFToIMG.createDirs()
 
     def ScanAreaClick(self, _):
@@ -75,15 +81,17 @@ class mainGUI(ASSGUI):
         self.selector_gui = setAreaGUI(root, self.img, self.set_scan_area)
         root.mainloop()
 
-    def ConvertPDF(self, _):
-        root = tk.Toplevel()
-        self.selector_gui = convertPDF(root, None)
-        root.mainloop()
+    def OpenPDF(self, _):
+        PDFToIMG.convertPDFToIMG(filedialog.askopenfilename())
 
-    def ConvertToCSV(self, _):
+    def SelectImage(self, _):
+        PDFToIMG.convertPDFToIMG(filedialog.askopenfilename())
+
+
+    def DetectSignatures(self, _):
         if self.grid is not None:
             root = tk.Toplevel()
-            self.selector_gui = ConvertToCSVGUI(root, self.base_image, self.grid, self.students, 0)
+            self.selector_gui = DetectSignatures(root, self.base_image, self.grid, self.students, 0)
             root.mainloop()
 
     def set_scan_area(self, scan_area: Quad) -> None:
@@ -112,7 +120,7 @@ class setAreaGUI(ASSGUI):
         self.corners = []
         super(setAreaGUI, self).__init__(master, img)
         self.callback = callback
-        self.buttons = None
+        self.objects= None
         self.canvas.bind("<Button-1>", self.mouseClickOnCanvas)
 
     def mouseClickOnCanvas(self, event) -> None:
@@ -144,18 +152,7 @@ class setAreaGUI(ASSGUI):
                                     anchor=tk.NW)
 
 
-class convertPDF(ASSGUI):
-
-    def __init__(self, master, img):
-        super(convertPDF, self).__init__(master, img, "300x300")
-        self.createButton("OpenPDF", 0, 0, self.OpenPDF)
-
-    @staticmethod
-    def OpenPDF(_):
-        PDFToIMG.convertPDFToIMG(filedialog.askopenfilename())
-
-
-class ConvertToCSVGUI(ASSGUI):
+class DetectSignatures(ASSGUI):
 
     def __init__(self, master, img: np.ndarray, grid: List[List[Quad]], students: List[Student], class_num: int):
         self.grid = grid
@@ -163,7 +160,7 @@ class ConvertToCSVGUI(ASSGUI):
         self.class_num = class_num
         self.included_students = []
         self.backup_image = img.copy()
-        super(ConvertToCSVGUI, self).__init__(master, img, "800x600")
+        super(DetectSignatures, self).__init__(master, img, "800x600")
 
         for column in self.grid:
             for quad in column:
@@ -192,6 +189,11 @@ class ConvertToCSVGUI(ASSGUI):
             self.included_students.append(student)
 
         self.canvas.bind("<Button-1>", self.mouseClickOnCanvas)
+        self.createButton("Save",0,0, self.save)
+        self.selected = tk.StringVar(master)
+        self.dates=["1","2","3","4"]
+        self.selected.set(self.dates[0])
+        self.createDropDown(self.dates,1,0,self.selected)
         self.update_canvas()
 
     def mouseClickOnCanvas(self, event) -> None:
@@ -221,4 +223,8 @@ class ConvertToCSVGUI(ASSGUI):
 
         cv2.addWeighted(draw_img, 0.5, self.background_image, 0.5, 0, self.background_image)
 
-        super(ConvertToCSVGUI, self).update_canvas()
+        super(DetectSignatures, self).update_canvas()
+    def save(self, event) -> None:
+        print("Mentes")
+        self.master.destroy()
+        print(self.selected.get())
