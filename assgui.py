@@ -1,16 +1,16 @@
 import tkinter as tk
 from tkinter import filedialog
+from typing import Callable, Tuple, List
 
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
-from typing import Callable, Tuple, List
 
 from compvis import ComputerVision
+from data import Student
 from gmath import GraphicsMath
 from numpyext import nparray_to_point
 from pdfimg import PDFToIMG
-from data import Student
 
 Point = np.ndarray
 Quad = Tuple[Point, Point, Point, Point]
@@ -193,6 +193,7 @@ class DetectSignatures(ASSGUI):
 
         self.canvas.bind("<Button-1>", self.mouseClickOnCanvas)
         self.createButton("Save", 0, 0, self.save)
+        self.createButton("Cancel", 0, 0, self.cancel)
         self.selected = tk.StringVar(master)
         self.dates = ["1", "2", "3", "4"]
         self.selected.set(self.dates[0])
@@ -228,7 +229,11 @@ class DetectSignatures(ASSGUI):
 
         super(DetectSignatures, self).update_canvas()
 
-    def save(self, _) -> None:
+    def save(self, event) -> None:
         print("Mentes")
         self.master.destroy()
         print(self.selected.get())
+
+    def cancel(self, event) -> None:
+        self.master.destroy()
+        return
