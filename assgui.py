@@ -85,7 +85,9 @@ class mainGUI(ASSGUI):
         PDFToIMG.convertPDFToIMG(filedialog.askopenfilename())
 
     def SelectImage(self, _):
-        PDFToIMG.convertPDFToIMG(filedialog.askopenfilename())
+        self.img = cv2.imread(filedialog.askopenfilename())
+        self.update_canvas()
+        super(mainGUI, self).__init__(self.master, self.img)
 
 
     def DetectSignatures(self, _):
@@ -95,14 +97,16 @@ class mainGUI(ASSGUI):
             root.mainloop()
 
     def set_scan_area(self, scan_area: Quad) -> None:
-        pil_img = GraphicsMath.transform_to_rectangle(Image.fromarray(self.img), scan_area)
-        img = np.array(pil_img)[:, :, ::-1].copy()
-        self.base_image = img.copy()
-        width, height = pil_img.size
-        cv2.rectangle(img, (0, 0), (int(width), int(height)), (0, 0, 0), 3)
-
-        points = GraphicsMath.findLineIntersections(img)
-        self.grid = GraphicsMath.create_grid_from_points(points, 5)
+        try:
+            pil_img = GraphicsMath.transform_to_rectangle(Image.fromarray(self.img), scan_area)
+            img = np.array(pil_img)[:, :, ::-1].copy()
+            self.base_image = img.copy()
+            width, height = pil_img.size
+            cv2.rectangle(img, (0, 0), (int(width), int(height)), (0, 0, 0), 3)
+            points = GraphicsMath.findLineIntersections(img)
+            self.grid = GraphicsMath.create_grid_from_points(points, 5)
+        except:
+            return
 
         for column in self.grid:
             for quad in column:
