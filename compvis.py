@@ -49,12 +49,12 @@ class ComputerVision:
 
     @staticmethod
     def getSignatureFromArea(points: Tuple[Tuple[int, int], Tuple[int, int]], img: np.ndarray,
-                             white_threshold: int = 230, sign_threshold: float = 1):
+                             white_threshold: int = 230, sign_threshold: float = 1, padding: int = 5):
         roi = img[points[0][1]:points[1][1], points[0][0]:points[1][0]]
         whitepxcnt = 0
         allpxcnt = 0
-        for y in range(3, roi.shape[0] - 3):
-            for x in range(3, roi.shape[1] - 3):
+        for y in range(padding, roi.shape[0] - padding):
+            for x in range(padding, roi.shape[1] - padding):
                 allpxcnt += 1
                 if roi[y][x][0] >= white_threshold and \
                         roi[y][x][1] >= white_threshold and \
