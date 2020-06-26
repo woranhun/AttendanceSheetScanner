@@ -8,9 +8,9 @@ from PIL import Image, ImageTk
 
 from compvis import ComputerVision
 from data import Student
+from filemgmt import FileMGMT
 from gmath import GraphicsMath
 from numpyext import nparray_to_point
-from pdfimg import PDFToIMG
 
 Point = np.ndarray
 Quad = Tuple[Point, Point, Point, Point]
@@ -74,7 +74,17 @@ class mainGUI(ASSGUI):
         self.createButton("OpenPDF", 3, 0, self.OpenPDF)
         self.createButton("SelectImage", 4, 0, self.SelectImage)
         self.createButton("DetectSignatures", 6, 0, self.DetectSignatures)
-        PDFToIMG.createDirs()
+        self.createButton("Save", 7, 0, self.save)
+        self.createButton("Clear", 7, 0, self.clear)
+        FileMGMT.createDirs()
+
+    def save(self, event) -> None:
+        print("Mentes")
+        FileMGMT.saveToCSV(self.students)
+
+    def clear(self, evemt) -> None:
+        print("Clear")
+        self.students = []
 
     def ScanAreaClick(self, _):
         root = tk.Toplevel()
@@ -82,7 +92,7 @@ class mainGUI(ASSGUI):
         root.mainloop()
 
     def OpenPDF(self, _):
-        PDFToIMG.convertPDFToIMG(filedialog.askopenfilename())
+        FileMGMT.convertPDFToIMG(filedialog.askopenfilename())
 
     def SelectImage(self, _):
         self.img = cv2.imread(filedialog.askopenfilename())
@@ -192,12 +202,11 @@ class DetectSignatures(ASSGUI):
             self.included_students.append(student)
 
         self.canvas.bind("<Button-1>", self.mouseClickOnCanvas)
-        self.createButton("Save", 0, 0, self.save)
-        self.createButton("Cancel", 0, 0, self.cancel)
+        self.createButton("Cancel", 1, 0, self.cancel)
         self.selected = tk.StringVar(master)
         self.dates = ["1", "2", "3", "4"]
         self.selected.set(self.dates[0])
-        self.createDropDown(self.dates, 1, 0, self.selected)
+        self.createDropDown(self.dates, 2, 0, self.selected)
         self.update_canvas()
 
     def mouseClickOnCanvas(self, event) -> None:
@@ -228,11 +237,6 @@ class DetectSignatures(ASSGUI):
         cv2.addWeighted(draw_img, 0.5, self.background_image, 0.5, 0, self.background_image)
 
         super(DetectSignatures, self).update_canvas()
-
-    def save(self, event) -> None:
-        print("Mentes")
-        self.master.destroy()
-        print(self.selected.get())
 
     def cancel(self, event) -> None:
         self.master.destroy()
