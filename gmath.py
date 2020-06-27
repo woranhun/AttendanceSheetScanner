@@ -1,17 +1,15 @@
 import math
 from collections import defaultdict
-from typing import Tuple, List
+from typing import List
+
 import cv2
 import numpy as np
 from PIL import Image
 from scipy.spatial import distance
-from numpyext import normalize, nparray_to_point
 
 from compvis import ComputerVision
-
-Point = np.ndarray
-Quad = Tuple[Point, Point, Point, Point]
-Line = Tuple[Point, Point]
+from numpyext import nparray_to_point
+from types import Point, Quad
 
 
 class GraphicsMath:
@@ -133,9 +131,9 @@ class GraphicsMath:
         return intersections
 
     @staticmethod
-    def findLineIntersections(pil_img: Image, eps: float = 10.0) -> List[Point]:
+    def find_line_intersection(pil_img: Image, eps: float = 10.0) -> List[Point]:
         ret = []
-        lines = ComputerVision.imageToHoughLines(pil_img)
+        lines = ComputerVision.image_to_hough_lines(pil_img)
 
         segmented = GraphicsMath.segment_by_angle_kmeans(lines)
         intersecions = GraphicsMath.segmented_intersections(segmented)
@@ -152,8 +150,8 @@ class GraphicsMath:
 
     @staticmethod
     def create_grid_from_points(points: List[Point], eps: float = 5) -> List[List[Quad]]:
-        points.sort(key=lambda p: p[1])
-        points.sort(key=lambda p: p[0])
+        points.sort(key=lambda point: point[1])
+        points.sort(key=lambda point: point[0])
 
         top_left = points.pop(0)
 
@@ -163,7 +161,7 @@ class GraphicsMath:
             if np.abs(top_left[1] - p[1]) < eps:
                 line.append(points.pop(i))
 
-        line.sort(key=lambda p: p[0])
+        line.sort(key=lambda point: point[0])
 
         grid = []
         for top_point in line:
