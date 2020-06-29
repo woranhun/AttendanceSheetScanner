@@ -158,7 +158,7 @@ class MainGUI(ASSGUI):
             root.mainloop()
             self.update_canvas()
 
-    def receive_signatures(self, students: Dict[Student]):
+    def receive_signatures(self, students: Dict[str, Student]):
         self.students = students
         self.images[self.current_index]["scan_areas"].append(self.current_scan_area)
         self.current_scan_area = None
@@ -221,8 +221,8 @@ class SetAreaGUI(ASSGUI):
 
 class DetectSignaturesGUI(ASSGUI):
 
-    def __init__(self, master, img: np.ndarray, grid: List[List[Quad]], students: Dict[Student], num_of_lectures: int,
-                 callback: Callable[[Dict[Student]], None]):
+    def __init__(self, master, img: np.ndarray, grid: List[List[Quad]], students: Dict[str, Student], num_of_lectures: int,
+                 callback: Callable[[Dict[str, Student]], None]):
         self.grid = grid
         self.students = students
         self.signs = []
