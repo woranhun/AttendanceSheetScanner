@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import pytesseract
 from PIL import Image
-from types import Point, Line
+from customtypes import Point, Line
 
 
 class ComputerVision:

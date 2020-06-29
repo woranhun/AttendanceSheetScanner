@@ -9,7 +9,7 @@ from scipy.spatial import distance
 
 from compvis import ComputerVision
 from numpyext import nparray_to_point
-from types import Point, Quad
+from customtypes import Point, Quad
 
 
 class GraphicsMath:
@@ -134,7 +134,8 @@ class GraphicsMath:
     def find_line_intersection(pil_img: Image, eps: float = 10.0) -> List[Point]:
         ret = []
         lines = ComputerVision.image_to_hough_lines(pil_img)
-
+        if len(lines) == 0:
+            return []
         segmented = GraphicsMath.segment_by_angle_kmeans(lines)
         intersecions = GraphicsMath.segmented_intersections(segmented)
         # Ezen kéne még heggeszteni, hogy ne O(n^2) legyen

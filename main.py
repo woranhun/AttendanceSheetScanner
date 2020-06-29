@@ -1,11 +1,12 @@
 import tkinter as tk
-
-import cv2
+from tkinter import simpledialog
 
 from assgui import MainGUI
 
 if __name__ == "__main__":
-    img = cv2.imread('testimg/12.jpg')
     root = tk.Tk()
-    gui = MainGUI(root, img)
+    root.withdraw()
+    num_of_lectures = int(simpledialog.askstring("", "Hány előadás van ebben az évben?"))
+    root.deiconify()
+    gui = MainGUI(root, None, num_of_lectures)
     root.mainloop()
