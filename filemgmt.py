@@ -29,6 +29,6 @@ class FileMGMT:
             file.write("Neptun;")
             file.write(";".join([f"{i}.EA" for i in range(1, num_of_lectures + 1)]))
             file.write("\n")
-            for student in obj:
-                file.write(str(student))
+            for name in obj:
+                file.write(str(obj[name]))
                 file.write("\n")

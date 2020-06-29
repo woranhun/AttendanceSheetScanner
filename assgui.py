@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import filedialog, messagebox
-from typing import Callable, List
+from typing import Callable, List, Dict
 
 import cv2
 import numpy as np
@@ -68,7 +68,7 @@ class MainGUI(ASSGUI):
         self.current_index = 0
         self.selector_gui = None
         self.grid = None
-        self.students = []
+        self.students = {}
         self.current_scan_area = None
         self.transformed_area = None
         self.num_of_lectures = num_of_lectures
@@ -114,7 +114,7 @@ class MainGUI(ASSGUI):
         messagebox.showinfo("", "Mentve")
 
     def clear(self) -> None:
-        self.students = []
+        self.students = {}
 
     def open_pdf(self):
         images = FileMGMT.convert_pdf_to_img(filedialog.askopenfilename())
@@ -158,7 +158,7 @@ class MainGUI(ASSGUI):
             root.mainloop()
             self.update_canvas()
 
-    def receive_signatures(self, students: List[Student]):
+    def receive_signatures(self, students: Dict[str, Student]):
         self.students = students
         self.images[self.current_index]["scan_areas"].append(self.current_scan_area)
         self.current_scan_area = None
@@ -221,8 +221,8 @@ class SetAreaGUI(ASSGUI):
 
 class DetectSignaturesGUI(ASSGUI):
 
-    def __init__(self, master, img: np.ndarray, grid: List[List[Quad]], students: List[Student], num_of_lectures: int,
-                 callback: Callable[[List[Student]], None]):
+    def __init__(self, master, img: np.ndarray, grid: List[List[Quad]], students: Dict[str, Student], num_of_lectures: int,
+                 callback: Callable[[Dict[str, Student]], None]):
         self.grid = grid
         self.students = students
         self.signs = []
@@ -259,15 +259,13 @@ class DetectSignaturesGUI(ASSGUI):
 
     def finish(self):
         for sign in self.signs:
-            name = sign["name"]
+            name = sign["name"].strip().upper()
             sign = sign["sign"]
-            for stud in self.students:
-                if stud.name is name:
-                    student = stud
-                    break
+            if name in self.students:
+                student = self.students[name]
             else:
                 student = Student(name, self.num_of_lectures)
-                self.students.append(student)
+                self.students[name] = student
             student.set_signed(int(self.selected.get()) - 1, sign)
         self.master.destroy()
         self.callback(self.students)
